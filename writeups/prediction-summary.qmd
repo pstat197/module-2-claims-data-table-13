@@ -38,6 +38,10 @@ Describe your final predictive models. Include one paragraph with details on the
 
 -   training method
 
+
+For the binary classification task, we used neural networks trained on the cleaned claim text to predict whether a page contained relevant claim content. We experimented with three architectures: the baseline TF–IDF dense network provided in the template, a deeper tuned dense model, and a hybrid TextCNN model. The final selected model was the TextCNN, which uses integer tokenization, a 256-dimensional embedding layer, and three parallel Conv1D layers with kernel sizes 3, 4, and 5 whose outputs are combined via global max pooling and passed through dropout-regularized dense layers before the sigmoid output. Hyperparameters were tuned through adjustments to embedding size, convolution widths, dropout rates, batch size, and learning rate (set to 5e-4 for stability). Training used binary cross-entropy loss with the Adam optimizer, validation-based early stopping, and learning-rate reduction on plateaus. The model converged in roughly 12–16 epochs and achieved the highest validation accuracy among all tested architectures.
+
+
 ### Results
 
 Indicate the predictive accuracy of the binary classifications and the multiclass classifications. Provide a table for each, and report sensitivity, specificity, and accuracy.[^1]

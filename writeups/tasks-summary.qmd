@@ -18,6 +18,7 @@ Do bigrams capture additional information relevant to the classification of inte
 
 ### Neural net
 
+
 Summarize the neural network model you trained by desribing:
 
 -   architecture
@@ -27,3 +28,10 @@ Summarize the neural network model you trained by desribing:
 -   training epochs
 
 -   predictive accuracy
+
+
+**Binary Classification Neural Network Summary**
+
+For the binary classification task, we evaluated several neural network architectures and compared them against the baseline TF–IDF dense neural network provided in the assignment template. After experimentation, the best-performing model was a hybrid TextCNN, which uses integer tokenization, a 256-dimensional embedding layer, and three parallel 1-D convolutional filters (kernel sizes 3, 4, and 5). The outputs of these filters are aggregated using global max-pooling and passed through dense layers with a final sigmoid activation for binary prediction. This architecture is well-suited for capturing short-range textual patterns that the baseline TF–IDF model cannot represent.
+
+The TextCNN was trained with the Adam optimizer and binary cross-entropy loss, using early stopping and learning-rate scheduling to prevent overfitting. Training was run for up to 25 epochs (typically converging between epochs 12–16). Using the same train/validation split as the original baseline model, the TextCNN achieved a validation accuracy of **0.844**, which outperformed both the baseline TF–IDF dense network and the tuned dense models considered.
