@@ -1,12 +1,16 @@
 ---
 title: "Summary of exploratory tasks"
-author: 'YOUR NAMES HERE'
+author: 'Joy Chang, Jeff Loomis, Soome Pyo, Jasper Luo'
 date: today
 ---
 
 ### HTML scraping
 
 Does including header content improve predictions? Answer the question and provide quantitative evidence supporting your answer.
+
+To test the value of adding header information to our scraped text, we ran two logistic principal component regression models. The first relied only on body text from <p> tags, while the second used a more comprehensive version of the cleaned dataset that also incorporated <h1>, <h2>, and <h3> elements. Because headers often highlight the main theme or claim of a page, we expected them to provide additional signal for classification.
+
+Our results show that adding headers leads to better predictive accuracy across repeated runs. This indicates that header text provides useful contextual information and improves the model’s ability to distinguish claim-related pages.
 
 ### Bigrams
 
