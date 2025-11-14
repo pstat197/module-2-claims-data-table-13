@@ -47,3 +47,24 @@ For the binary classification task, we used neural networks trained on the clean
 Indicate the predictive accuracy of the binary classifications and the multiclass classifications. Provide a table for each, and report sensitivity, specificity, and accuracy.[^1]
 
 [^1]: Read [this article](https://yardstick.tidymodels.org/articles/multiclass.html) on multiclass averaging.
+
+
+#### Binary Classification
+
+The following table summarizes the predictive performance of our binary classifier, reporting accuracy, sensitivity, and specificity calculated on the validation set.
+
+```{r}
+#| echo: false
+
+library(knitr)
+
+metrics_df <- tibble::tribble(
+  ~Metric,        ~Value,
+  "Accuracy",     0.844,
+  "Sensitivity",  0.818,
+  "Specificity",  0.873
+)
+
+kable(metrics_df, digits = 3, caption = "Binary Classification Performance Metrics")
+```
+
