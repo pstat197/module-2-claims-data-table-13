@@ -56,7 +56,11 @@ cT <- confusionMatrix(
   factor(pred_classes),
   factor(val_labels)
 )[4]
-cT$byClass[1,1]
+Overall <- confusionMatrix(
+  factor(pred_classes),
+  factor(val_labels)
+)[3]
+Overall
 # ---------------------------------------------------------------
 # 6. Make output table (nice for QMD)
 # ---------------------------------------------------------------
