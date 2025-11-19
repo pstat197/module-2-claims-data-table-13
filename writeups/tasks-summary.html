@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.3.450">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Joy Chang, Jeff Loomis, Soome Pyo, Jasper Luo">
-<meta name="dcterms.date" content="2025-11-18">
+<meta name="dcterms.date" content="2025-11-19">
 
 <title>Summary of exploratory tasks</title>
 <style>
@@ -26,22 +26,20 @@ ul.task-list li input[type="checkbox"] {
 
 
 <script src="tasks-summary_files/libs/clipboard/clipboard.min.js"></script>
-<script src="tasks-summary_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="tasks-summary_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="tasks-summary_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="tasks-summary_files/libs/quarto-html/quarto.js"></script>
 <script src="tasks-summary_files/libs/quarto-html/popper.min.js"></script>
 <script src="tasks-summary_files/libs/quarto-html/tippy.umd.min.js"></script>
 <script src="tasks-summary_files/libs/quarto-html/anchor.min.js"></script>
 <link href="tasks-summary_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="tasks-summary_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="tasks-summary_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="tasks-summary_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="tasks-summary_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="tasks-summary_files/libs/bootstrap/bootstrap-9e3ffae467580fdb927a41352e75a2e0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="tasks-summary_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
 
-<body class="fullcontent quarto-light">
+<body class="fullcontent">
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
 
@@ -66,7 +64,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">November 18, 2025</p>
+      <p class="date">November 19, 2025</p>
     </div>
   </div>
   
@@ -74,36 +72,26 @@ ul.task-list li input[type="checkbox"] {
   </div>
   
 
-
 </header>
 
 <section id="html-scraping" class="level3">
-<h3 class="anchored">HTML scraping</h3>
-<p>Does including header content improve predictions? Answer the question and provide quantitative evidence supporting your answer.</p>
-To test the value of adding header information to our scraped text, we ran two logistic principal component regression models. The first relied only on body text from
-<p>
-tags, while the second used a more comprehensive version of the cleaned dataset that also incorporated
-</p><h1>
-,
-</h1><h2 class="anchored" data-anchor-id="html-scraping">
-, and
-</h2><h3 class="anchored">
-<p>elements. Because headers often highlight the main theme or claim of a page, we expected them to provide additional signal for classification.</p>
+<h3 class="anchored" data-anchor-id="html-scraping">HTML scraping</h3>
+<p>To test the value of adding header information to our scraped text, we ran two logistic principal component regression models. The first relied only on body text from &lt;p&gt; tags, while the second used a more comprehensive version of the cleaned dataset that also incorporated &lt;h1&gt;, &lt;h2&gt;, and &lt;h3&gt; elements. Because headers often highlight the main theme or claim of a page, we expected them to provide additional signal for classification.</p>
 <p>Our results show that adding headers leads to better predictive accuracy across repeated runs. This indicates that header text provides useful contextual information and improves the model’s ability to distinguish claim-related pages.</p>
-</h3></section>
+</section>
 <section id="bigrams" class="level3">
 <h3 class="anchored" data-anchor-id="bigrams">Bigrams</h3>
-<p>Do bigrams capture additional information relevant to the classification of interest? Answer the question, <strong>briefly</strong> describe what analysis you conducted to arrive at your answer, and provide quantitative evidence supporting your answer.</p>
+<p>We wanted to determine if using bigrams (two-word sequences) can capture additional predictive information relevant to the classification of interest, which in this case is the claims status of a page, that is not already present in the unigram (single word) features.</p>
+<p>To test the incremental value of bigrams, we employed a stacked modeling approach.. This allowed us to cleanly isolate the contribution of the bigram features. Specifically,</p>
+<ul>
+<li><p>Baseline Model (model 1): We established a baseline by fitting a Logistic Principal Component Regression (LPCR) model using only word-based TF-IDF features.</p></li>
+<li><p>Stacked Model (model 2): We then trained a second logistic regression model. The features for this model included the predicted log-odds (link scale predictions) from model 1 and a set of principal components derived from the bigram TF-IDF vectors.</p></li>
+</ul>
+<p>This methodology tests whether the bigram information, when added to the trained word model’s output, can boost overall accuracy.</p>
+<p>By calculating the accuracy of each model, which are 0.469 for model 1 and 0.452 for model 2, the analysis indicates that bigrams do not appear to capture significant additional information that warrants their inclusion in the final predictive system. Actually, the addition of bigram features slightly decreased the predictive accuracy of the model on the training data.</p>
 </section>
 <section id="neural-net" class="level3">
 <h3 class="anchored" data-anchor-id="neural-net">Neural net</h3>
-<p>Summarize the neural network model you trained by desribing:</p>
-<ul>
-<li><p>architecture</p></li>
-<li><p>optimization and loss</p></li>
-<li><p>training epochs</p></li>
-<li><p>predictive accuracy</p></li>
-</ul>
 <p><strong>Binary Classification Neural Network Summary</strong></p>
 <p>For the binary classification task, we evaluated several neural network architectures and compared them against the baseline TF–IDF dense neural network provided in the assignment template. After experimentation, the best-performing model was a hybrid TextCNN, which uses integer tokenization, a 256-dimensional embedding layer, and three parallel 1-D convolutional filters (kernel sizes 3, 4, and 5). The outputs of these filters are aggregated using global max-pooling and passed through dense layers with a final sigmoid activation for binary prediction. This architecture is well-suited for capturing short-range textual patterns that the baseline TF–IDF model cannot represent.</p>
 <p>The TextCNN was trained with the Adam optimizer and binary cross-entropy loss, using early stopping and learning-rate scheduling to prevent overfitting. Training was run for up to 25 epochs (typically converging between epochs 12–16). Using the same train/validation split as the original baseline model, the TextCNN achieved a validation accuracy of <strong>0.844</strong>, which outperformed both the baseline TF–IDF dense network and the tuned dense models considered.</p>
@@ -115,54 +103,22 @@ tags, while the second used a more comprehensive version of the cleaned dataset 
 </main>
 <!-- /main column -->
 <script id="quarto-html-after-body" type="application/javascript">
-  window.document.addEventListener("DOMContentLoaded", function (event) {
-    const icon = "";
-    const anchorJS = new window.AnchorJS();
-    anchorJS.options = {
-      placement: 'right',
-      icon: icon
-    };
-    anchorJS.add('.anchored');
-    const isCodeAnnotation = (el) => {
-      for (const clz of el.classList) {
-        if (clz.startsWith('code-annotation-')) {                     
-          return true;
-        }
-      }
-      return false;
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
     }
-    const onCopySuccess = function(e) {
-      // button target
-      const button = e.trigger;
-      // don't keep focus
-      button.blur();
-      // flash "checked"
-      button.classList.add('code-copy-button-checked');
-      var currentTitle = button.getAttribute("title");
-      button.setAttribute("title", "Copied!");
-      let tooltip;
-      if (window.bootstrap) {
-        button.setAttribute("data-bs-toggle", "tooltip");
-        button.setAttribute("data-bs-placement", "left");
-        button.setAttribute("data-bs-title", "Copied!");
-        tooltip = new bootstrap.Tooltip(button, 
-          { trigger: "manual", 
-            customClass: "code-copy-button-tooltip",
-            offset: [0, -8]});
-        tooltip.show();    
-      }
-      setTimeout(function() {
-        if (tooltip) {
-          tooltip.hide();
-          button.removeAttribute("data-bs-title");
-          button.removeAttribute("data-bs-toggle");
-          button.removeAttribute("data-bs-placement");
-        }
-        button.setAttribute("title", currentTitle);
-        button.classList.remove('code-copy-button-checked');
-      }, 1000);
-      // clear code selection
-      e.clearSelection();
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
     }
   }
   toggleBodyColorPrimary();  
@@ -380,7 +336,6 @@ tags, while the second used a more comprehensive version of the cleaned dataset 
 });
 </script>
 </div> <!-- /content -->
-
 
 
 

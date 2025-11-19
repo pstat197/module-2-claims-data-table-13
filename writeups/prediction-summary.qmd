@@ -10,7 +10,7 @@ The aim was to develop predictive models that could classify what content a webs
 
 
 ### Preprocessing
-Our preprocessing pipeline began by extracting the main textual content from each webpage, including both paragraph text and header elements (<h1>, <h2>, <h3>), to capture not only detailed body content but also the high-level cues often conveyed in section titles. 
+Our preprocessing pipeline began by extracting the main textual content from each webpage, including both paragraph text and header elements (\<h1\>, \<h2\>, \<h3\>), to capture not only detailed body content but also the high-level cues often conveyed in section titles. 
 
 The combined text was then cleaned by removing URLs, emails, punctuation, digits, symbols, and excess whitespace, followed by lowercasing to standardize formatting. 
 
