@@ -2,21 +2,26 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.0.38">
+<meta name="generator" content="quarto-1.3.450">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="YOUR NAMES HERE">
-<meta name="dcterms.date" content="2022-11-03">
+<meta name="author" content="Joy Chang, Jeff Loomis, Soome Pyo, Jasper Luo">
+<meta name="dcterms.date" content="2025-11-18">
 
 <title>Summary of exploratory tasks</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-span.underline{text-decoration: underline;}
-div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
 </style>
 
 
@@ -52,23 +57,57 @@ ul.task-list{list-style: none;}
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>YOUR NAMES HERE </p>
+             <p>Joy Chang, Jeff Loomis, Soome Pyo, Jasper Luo </p>
           </div>
   </div>
     
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">November 3, 2022</p>
+      <p class="date">November 18, 2025</p>
     </div>
   </div>
+  
     
   </div>
   
 
 </header>
 
-
+<section id="html-scraping" class="level3">
+<h3 class="anchored">HTML scraping</h3>
+<p>Does including header content improve predictions? Answer the question and provide quantitative evidence supporting your answer.</p>
+To test the value of adding header information to our scraped text, we ran two logistic principal component regression models. The first relied only on body text from
+<p>
+tags, while the second used a more comprehensive version of the cleaned dataset that also incorporated
+</p><h1>
+,
+</h1><h2 class="anchored" data-anchor-id="html-scraping">
+, and
+</h2><h3 class="anchored">
+<p>elements. Because headers often highlight the main theme or claim of a page, we expected them to provide additional signal for classification.</p>
+<p>Our results show that adding headers leads to better predictive accuracy across repeated runs. This indicates that header text provides useful contextual information and improves the model’s ability to distinguish claim-related pages.</p>
+</h3></section>
+<section id="bigrams" class="level3">
+<h3 class="anchored" data-anchor-id="bigrams">Bigrams</h3>
+<p>Do bigrams capture additional information relevant to the classification of interest? Answer the question, <strong>briefly</strong> describe what analysis you conducted to arrive at your answer, and provide quantitative evidence supporting your answer.</p>
+</section>
+<section id="neural-net" class="level3">
+<h3 class="anchored" data-anchor-id="neural-net">Neural net</h3>
+<p>Summarize the neural network model you trained by desribing:</p>
+<ul>
+<li><p>architecture</p></li>
+<li><p>optimization and loss</p></li>
+<li><p>training epochs</p></li>
+<li><p>predictive accuracy</p></li>
+</ul>
+<p><strong>Binary Classification Neural Network Summary</strong></p>
+<p>For the binary classification task, we evaluated several neural network architectures and compared them against the baseline TF–IDF dense neural network provided in the assignment template. After experimentation, the best-performing model was a hybrid TextCNN, which uses integer tokenization, a 256-dimensional embedding layer, and three parallel 1-D convolutional filters (kernel sizes 3, 4, and 5). The outputs of these filters are aggregated using global max-pooling and passed through dense layers with a final sigmoid activation for binary prediction. This architecture is well-suited for capturing short-range textual patterns that the baseline TF–IDF model cannot represent.</p>
+<p>The TextCNN was trained with the Adam optimizer and binary cross-entropy loss, using early stopping and learning-rate scheduling to prevent overfitting. Training was run for up to 25 epochs (typically converging between epochs 12–16). Using the same train/validation split as the original baseline model, the TextCNN achieved a validation accuracy of <strong>0.844</strong>, which outperformed both the baseline TF–IDF dense network and the tuned dense models considered.</p>
+<p><strong>Multiclass Classification Neural Network Summary</strong></p>
+<p>For the multiclass classification task, we used a Recurrent Neural Network (RNN) as our model. We removed punctuation and converted all text to lowercase, and used integer tokenization. The model was trained with the Adam optimizer and sparse_categorical_crossentropy loss. Because it was multiclass, we used softmax activation function. Bidirectional reading was used and had improved accuracy compared to just forward reading. Regularization techniques dropout and recurrent dropout were employed to account for overfitting. Training was run for 10 epochs.</p>
+<p>Our metric acheived an overall accuracy of 74.53%, with 76.3% accuracy labeling No Relevant Content, 73.6% accuracy labeling Physical Activity, 91.0% accuracy labeling Possible Fatality, 73.6% Potential Unlawful Activity accurately labeled, and 59.4% Other Claim Content. There was difficulty accurately classifying Other Claim Content due to the fact that its sample size was very small compared to other types.</p>
+</section>
 
 </main>
 <!-- /main column -->
@@ -99,9 +138,23 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
   const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
     }
   });
   clipboard.on('success', function(e) {
@@ -113,7 +166,24 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     button.classList.add('code-copy-button-checked');
     var currentTitle = button.getAttribute("title");
     button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
     setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
       button.setAttribute("title", currentTitle);
       button.classList.remove('code-copy-button-checked');
     }, 1000);
@@ -141,31 +211,136 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   for (var i=0; i<noterefs.length; i++) {
     const ref = noterefs[i];
     tippyHover(ref, function() {
-      let href = ref.getAttribute('href');
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
     });
   }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
   var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
   for (var i=0; i<bibliorefs.length; i++) {
     const ref = bibliorefs[i];
-    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
-    tippyHover(ref, function() {
-      var popup = window.document.createElement('div');
-      cites.forEach(function(cite) {
-        var citeDiv = window.document.createElement('div');
-        citeDiv.classList.add('hanging-indent');
-        citeDiv.classList.add('csl-entry');
-        var biblioDiv = window.document.getElementById('ref-' + cite);
-        if (biblioDiv) {
-          citeDiv.innerHTML = biblioDiv.innerHTML;
-        }
-        popup.appendChild(citeDiv);
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
       });
-      return popup.innerHTML;
-    });
+    }
   }
 });
 </script>
