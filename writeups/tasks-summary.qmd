@@ -5,12 +5,13 @@ date: today
 ---
 
 ### HTML scraping
+
 To test the value of adding header information to our scraped text, we ran two logistic principal component regression models. The first relied only on body text from <p> tags, while the second used a more comprehensive version of the cleaned dataset that also incorporated <h1>, <h2>, and <h3> elements. Because headers often highlight the main theme or claim of a page, we expected them to provide additional signal for classification.
 
 Our results show that adding headers leads to better predictive accuracy across repeated runs. This indicates that header text provides useful contextual information and improves the model’s ability to distinguish claim-related pages.
 
-
 ### Bigrams
+
 We wanted to determine if using bigrams (two-word sequences) can capture additional predictive information relevant to the classification of interest, which in this case is the claims status of a page, that is not already present in the unigram (single word) features.
 
 To test the incremental value of bigrams, we employed a stacked modeling approach.. This allowed us to cleanly isolate the contribution of the bigram features. Specifically,
@@ -25,8 +26,15 @@ By calculating the accuracy of each model, which are 0.469 for model 1 and 0.452
 
 
 ### Neural net
+**Binary Classification Neural Network Summary**
 
-#### Binary Classification Neural Network Summary
 For the binary classification task, we evaluated several neural network architectures and compared them against the baseline TF–IDF dense neural network provided in the assignment template. After experimentation, the best-performing model was a hybrid TextCNN, which uses integer tokenization, a 256-dimensional embedding layer, and three parallel 1-D convolutional filters (kernel sizes 3, 4, and 5). The outputs of these filters are aggregated using global max-pooling and passed through dense layers with a final sigmoid activation for binary prediction. This architecture is well-suited for capturing short-range textual patterns that the baseline TF–IDF model cannot represent.
 
 The TextCNN was trained with the Adam optimizer and binary cross-entropy loss, using early stopping and learning-rate scheduling to prevent overfitting. Training was run for up to 25 epochs (typically converging between epochs 12–16). Using the same train/validation split as the original baseline model, the TextCNN achieved a validation accuracy of **0.844**, which outperformed both the baseline TF–IDF dense network and the tuned dense models considered.
+
+**Multiclass Classification Neural Network Summary**
+
+For the multiclass classification task, we used a Recurrent Neural Network (RNN) as our model. We removed punctuation and converted all text to lowercase, and used integer tokenization. 
+The model was trained with the Adam optimizer and sparse_categorical_crossentropy loss. Because it was multiclass, we used softmax activation function. Bidirectional reading was used and had improved accuracy compared to just forward reading. Regularization techniques dropout and recurrent dropout were employed to account for overfitting. Training was run for 10 epochs. 
+
+Our metric acheived an overall accuracy of 74.53%, with 76.3% accuracy labeling No Relevant Content, 73.6% accuracy labeling Physical Activity, 91.0% accuracy labeling Possible Fatality, 73.6% Potential Unlawful Activity accurately labeled, and 59.4% Other Claim Content. There was difficulty accurately classifying Other Claim Content due to the fact that its sample size was very small compared to other types. 
