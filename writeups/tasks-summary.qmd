@@ -11,8 +11,6 @@ Our results show that adding headers leads to better predictive accuracy across 
 
 
 ### Bigrams
-Do bigrams capture additional information relevant to the classification of interest? Answer the question, briefly describe what analysis you conducted to arrive at your answer, and provide quantitative evidence supporting your answer.
-
 We wanted to determine if using bigrams (two-word sequences) can capture additional predictive information relevant to the classification of interest, which in this case is the claims status of a page, that is not already present in the unigram (single word) features.
 
 To test the incremental value of bigrams, we employed a stacked modeling approach.. This allowed us to cleanly isolate the contribution of the bigram features. Specifically,
