@@ -3,17 +3,18 @@
 library(tidyverse)
 library(tidytext)
 library(rsample)
+library(tm)
 
 source('scripts/preprocessing.R')
-load('data/claims-clean.RData')
+load('data/claims-clean.RData', verbose = TRUE)
 
 # Split data
 set.seed(111825)
-split <- initial_split(claims-clean, prop = 0.7, strata = bclass)
+split <- initial_split(clean_df, prop = 0.7, strata = bclass)
 train_data <- training(split)
 test_data <- testing(split)
 
-# Tokenize the dataframe and run PCA
+# Function for tokenizing the dataframe and running PCA
 get_pcs <- function(data, type = "words", num_pcs = 50) {
   tokens <- data %>%
     select(.id, text_clean)
@@ -50,32 +51,35 @@ word_pca_out <- get_pcs(train_data, type = "words", num_pcs = 50)
 train_word_pcs <- word_pca_out$pcs
 
 # Merge with labels
-model_a_df <- train_data %>%
+model1_df <- train_data %>%
   inner_join(train_word_pcs, by = ".id") %>%
   mutate(bclass = as.factor(bclass))
 
 # Fit LPCR model to the word-tokenized data (model 1)
-model1 <- glm(bclass ~ ., data = model_a_df %>% select(-.id, -text_clean, -text_tmp), family = "binomial")
-train_log_odds <- predict(model_a, type = "link")
+model1 <- glm(bclass ~ ., data = model1_df %>% select(-.id, -text_clean, -text_tmp), family = "binomial")
+train_log_odds <- predict(model1, type = "link")
 
 # Process bigrams for model 2
 bigram_pca_out <- get_pcs(train_data, type = "bigrams", num_pcs = 20)
 train_bigram_pcs <- bigram_pca_out$pcs
 
-# Input bigram-tokenized data to a second logistic regression model (model 2)
-stacked_df <- train_data %>%
+# Create a dataframe for the model1's log odds
+log_odds_df <- model1_df %>%
   select(.id, bclass) %>%
-  mutate(word_log_odds = train_log_odds) %>% 
+  mutate(word_log_odds = train_log_odds)
+
+# Combine log_odds_df and bigram-tokenized data for model 2
+model2_df <- log_odds_df %>%
   inner_join(train_bigram_pcs, by = ".id")
 
 # Rename bigram columns
-colnames(stacked_df)[grep("PC", colnames(stacked_df))] <- paste0("Bigram_", colnames(stacked_df)[grep("PC", colnames(stacked_df))])
+colnames(model2_df)[grep("PC", colnames(model2_df))] <- paste0("Bigram_", colnames(model2_df)[grep("PC", colnames(model2_df))])
 
 # Fit model 2
-model2 <- glm(bclass ~ ., data = stacked_df %>% select(-.id), family = "binomial")
+model2 <- glm(bclass ~ ., data = model2_df %>% select(-.id), family = "binomial")
 
 # Evaluation
-# Get accuracy
+# FUnction for getting accuracy
 calc_acc <- function(model, df, type="response") {
   preds <- predict(model, newdata = df, type = type)
   pred_class <- ifelse(preds > 0, "1", "0")
@@ -84,8 +88,8 @@ calc_acc <- function(model, df, type="response") {
   mean(pred_class == actual)
 }
 
-acc1 <- calc_acc(model1, model_a_df, type="link")
-acc2 <- calc_acc(model2, stacked_df, type="response")
+acc1 <- calc_acc(model1, model1_df, type="link")
+acc2 <- calc_acc(model2, model2_df, type="response")
 
 print(paste("Model 1 (Words Only) Accuracy:", acc1))
 print(paste("Model 2 (Words + Bigrams) Accuracy:", acc2))
