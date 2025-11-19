@@ -56,7 +56,10 @@ model1_df <- train_data %>%
   mutate(bclass = as.factor(bclass))
 
 # Fit LPCR model to the word-tokenized data (model 1)
-model1 <- glm(bclass ~ ., data = model1_df %>% select(-.id, -text_clean, -text_tmp), family = "binomial")
+model1 <- glm(bclass ~ ., 
+              data = model1_df %>% select(-.id, -text_clean, -text_tmp), 
+              family = "binomial",
+              control = list(maxit = 100))
 train_log_odds <- predict(model1, type = "link")
 
 # Process bigrams for model 2
@@ -76,10 +79,13 @@ model2_df <- log_odds_df %>%
 colnames(model2_df)[grep("PC", colnames(model2_df))] <- paste0("Bigram_", colnames(model2_df)[grep("PC", colnames(model2_df))])
 
 # Fit model 2
-model2 <- glm(bclass ~ ., data = model2_df %>% select(-.id), family = "binomial")
+model2 <- glm(bclass ~ ., 
+              data = model2_df %>% select(-.id), 
+              family = "binomial",
+              control = list(maxit = 100))
 
 # Evaluation
-# FUnction for getting accuracy
+# Function for getting accuracy
 calc_acc <- function(model, df, type="response") {
   preds <- predict(model, newdata = df, type = type)
   pred_class <- ifelse(preds > 0, "1", "0")
@@ -98,7 +104,7 @@ print(paste("Model 2 (Words + Bigrams) Accuracy:", acc2))
 summary(model2)
 
 if (acc2 > acc1) {
-  print(paste("Model 2 (Words + Bigrams) has a higher accuracy (", aac2, " vs ", acc1, ")."))
+  print(paste("Model 2 (Words + Bigrams) has a higher accuracy (", acc2, " vs ", acc1, ")."))
 } else {
-  print(paste("Model 2 (Words + Bigrams) did not improve accuracy (", aac2, " vs ", aac1, ")."))
+  print(paste("Model 2 (Words + Bigrams) did not improve accuracy (", acc2, " vs ", acc1, ")."))
 }
