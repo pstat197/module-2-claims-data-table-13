@@ -10,22 +10,43 @@ require(tokenizers)
 
 # function to parse html and clean text
 parse_fn <- function(.html){
-  read_html(.html) %>%
+  page <- tryCatch(
+    read_html(.html),
+    error = function(e) return(NA)   
+  )
+  
+  if (is.na(page)) return("")
+  
+  headers <- page %>%
+    html_elements('h1, h2, h3') %>%
+    html_text2()
+  
+  paragraphs <- page %>%
     html_elements('p') %>%
-    html_text2() %>%
-    str_c(collapse = ' ') %>%
+    html_text2()
+  
+  # combine them 
+  raw_text <- c(headers, paragraphs) %>%
+    str_c(collapse = ' ')
+  
+  clean_text <- raw_text %>%
     rm_url() %>%
     rm_email() %>%
     str_remove_all('\'') %>%
-    str_replace_all(paste(c('\n', 
-                            '[[:punct:]]', 
-                            'nbsp', 
-                            '[[:digit:]]', 
-                            '[[:symbol:]]'),
-                          collapse = '|'), ' ') %>%
+    str_replace_all(
+      paste(c('\n',
+              '[[:punct:]]',
+              'nbsp',
+              '[[:digit:]]',
+              '[[:symbol:]]'),
+            collapse = '|'),
+      ' '
+    ) %>%
     str_replace_all("([a-z])([A-Z])", "\\1 \\2") %>%
     tolower() %>%
     str_replace_all("\\s+", " ")
+  
+  return(clean_text)
 }
 
 # function to apply to claims data
@@ -57,3 +78,4 @@ nlp_fn <- function(parse_data.out){
                 values_fill = 0)
   return(out)
 }
+

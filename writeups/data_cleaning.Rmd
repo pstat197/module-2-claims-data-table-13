@@ -1,0 +1,95 @@
+---
+title: "data_cleaning"
+author: "Jasper Luo"
+date: "2025-11-14"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(tidytext)
+library(textstem)
+library(rvest)
+library(qdapRegex)
+library(stopwords)
+library(tokenizers)
+library(here)
+```
+
+```{r}
+parse_fn <- function(.html){
+  page <- tryCatch(
+    read_html(.html),
+    error = function(e) return(NA)   
+  )
+  
+  if (is.na(page)) return("")
+  
+  headers <- page %>%
+    html_elements('h1, h2, h3') %>%
+    html_text2()
+  
+  paragraphs <- page %>%
+    html_elements('p') %>%
+    html_text2()
+  
+  # combine them 
+  raw_text <- c(headers, paragraphs) %>%
+    str_c(collapse = ' ')
+  
+  clean_text <- raw_text %>%
+    rm_url() %>%
+    rm_email() %>%
+    str_remove_all('\'') %>%
+    str_replace_all(
+      paste(c('\n',
+              '[[:punct:]]',
+              'nbsp',
+              '[[:digit:]]',
+              '[[:symbol:]]'),
+            collapse = '|'),
+      ' '
+    ) %>%
+    str_replace_all("([a-z])([A-Z])", "\\1 \\2") %>%
+    tolower() %>%
+    str_replace_all("\\s+", " ")
+  
+  return(clean_text)
+}
+
+# function to apply to claims data
+parse_data <- function(.df){
+  out <- .df %>%
+    filter(str_detect(text_tmp, '<!')) %>%
+    rowwise() %>%
+    mutate(text_clean = parse_fn(text_tmp)) %>%
+    unnest(text_clean) 
+  return(out)
+}
+```
+
+
+```{r}
+# load raw data
+load(here("data", "claims-raw.RData"))
+
+clean_df <- parse_data(claims_raw)
+
+save(clean_df, file = here("data", "claims-clean.RData"))
+
+```
+
+```{r}
+# check cleaned data
+clean_df %>% 
+  select(.id, text_clean) %>% 
+  slice(1:3)
+```
+
+
+

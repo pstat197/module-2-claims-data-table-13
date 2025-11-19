@@ -1,37 +1,65 @@
 ---
 title: "Predictive modeling of claims status"
-author: 'YOUR NAMES HERE'
+author: 'Joy Chang, Jeff Loomis, Soome Pyo, Jasper Luo'
 date: today
 ---
 
 ### Abstract
 
-Provide a 3-5 sentence summary of your work on the primary task. Indicate what input data was used, what method was used for binary class predictions, what method was used for multiclass predictions, and what estimated accuracies were achieved.
+The aim was to develop predictive models that could classify what content a website had. To do this, header and paragraph contents were scraped from the raw HTML webpages and processed into term frequencies of word tokens. For the binany classification model, a Hybrid Convolutional Neural Network for Text model achieved an estimated  accuracy of 84%. For the multiclass classification model, Long Short-Term Memory Recurrent Neural Network model  yielded an estimated overall accuracy of 75%. 
 
-> *Header and paragraph content was scraped from the raw webpages and processed into term frequencies of word tokens. For binary classification, a two-layer neural network yielded an estimated 81.4% accuracy; for multiclass classification, a support vector machine gave 78% accuracy.*
 
 ### Preprocessing
+Our preprocessing pipeline began by extracting the main textual content from each webpage, including both paragraph text and header elements (\<h1\>, \<h2\>, \<h3\>), to capture not only detailed body content but also the high-level cues often conveyed in section titles. 
 
-In one paragraph lay out your preprocessing pipeline. No need to provide exact step-by-step detail; just give an overview of the main components:
+The combined text was then cleaned by removing URLs, emails, punctuation, digits, symbols, and excess whitespace, followed by lowercasing to standardize formatting. 
 
--   what text content was extracted from HTML
+After cleaning, the text was converted into a quantitative representation using tokenization and TF–IDF weighting for downstream modeling. 
 
--   how text was cleaned
-
--   how cleaned text was represented quantitatively
+This pipeline ensures that the text used for prediction is consistently structured across all webpages.
 
 ### Methods
+For the binary classification task, we used neural networks trained on the cleaned claim text to predict whether a page contained relevant claim content. We experimented with three architectures: the baseline TF–IDF dense network provided in the template, a deeper tuned dense model, and a hybrid TextCNN model. The final selected model was the TextCNN, which uses integer tokenization, a 256-dimensional embedding layer, and three parallel Conv1D layers with kernel sizes 3, 4, and 5 whose outputs are combined via global max pooling and passed through dropout-regularized dense layers before the sigmoid output. Hyperparameters were tuned through adjustments to embedding size, convolution widths, dropout rates, batch size, and learning rate (set to 5e-4 for stability). Training used binary cross-entropy loss with the Adam optimizer, validation-based early stopping, and learning-rate reduction on plateaus. The model converged in roughly 12–16 epochs and achieved the highest validation accuracy among all tested architectures.
 
-Describe your final predictive models. Include one paragraph with details on the binary classification approach, and one on the multiclass approach. Include for each:
-
--   what ML/statistical method was used
-
--   model specification and hyperparameter selection
-
--   training method
+For the multiclass classification task, we used recurrent neural networks, specifically Long Short-Term Memory neural network, trained on the cleaned data to predict whether a text had either no relevant content, physical activity content, possible fatality content, potential unlawful activity content, or other claim content. We used integer tokenization, bidirectional reading, and used the softmax activation function. Our words vectors have a length of 32, and we had 32 memory cells for each direction: forwards and backwards. We used dropout and recurrent dropout to prevent overfitting. We used the Adam optimizer, and 10 epochs to train our model. 
 
 ### Results
+#### Binary Classification
 
-Indicate the predictive accuracy of the binary classifications and the multiclass classifications. Provide a table for each, and report sensitivity, specificity, and accuracy.[^1]
+The following table summarizes the predictive performance of our binary classifier, reporting accuracy, sensitivity, and specificity calculated on the validation set.
 
-[^1]: Read [this article](https://yardstick.tidymodels.org/articles/multiclass.html) on multiclass averaging.
+```{r}
+#| echo: false
+
+library(knitr)
+
+metrics_df <- tibble::tribble(
+  ~Metric,        ~Value,
+  "Accuracy",     0.844,
+  "Sensitivity",  0.818,
+  "Specificity",  0.873
+)
+
+kable(metrics_df, digits = 3, caption = "Binary Classification Performance Metrics")
+```
+
+
+#### Multiclass Classification
+
+The following table summarizes the predictive performance of our multiclass classifier, reporting accuracy, sensitivity, and specificity calculated on the validation set.
+
+```{r}
+#| echo: false
+
+library(knitr)
+
+metrics_df <- tibble::tribble(
+  ~Metric,        ~noRelevantContent, ~physicalActivity, ~possibleFatality, ~potentialUnlawfulActivity, ~otherClaimContent,
+  "Accuracy",                0.763,            0.736,             0.910,                     0.811,            0.594,
+  "Sensitivity",             0.857,            0.500,             0.862,                     0.636,            0.192,
+  "Specificity",             0.668,            0.971,             0.958,                     0.986,            0.995
+)
+
+
+kable(metrics_df, digits = 3, caption = "Multiclass Classification Performance Metrics")
+```
